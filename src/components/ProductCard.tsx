@@ -85,14 +85,16 @@ export default function ProductCard({ product, inCartQty, onAdd, animationDelay 
       </div>
 
       <div className="flex flex-1 flex-col px-1 pb-1 pt-4">
-        <h3 className="font-display text-lg font-semibold leading-snug tracking-tight">{product.reference}</h3>
-        <p className="mt-0.5 text-sm font-light text-neutral-500">
+        <h3 className="line-clamp-2 min-h-14 font-display text-lg font-semibold leading-snug tracking-tight">
+          {product.reference}
+        </h3>
+        <p className="mt-0.5 truncate text-sm font-light text-neutral-500">
           <span className="sr-only">Product type: </span>
           {product.name}
         </p>
-        <p className="mt-0.5 text-xs text-muted">{product.size}</p>
+        <p className="mt-0.5 truncate text-xs text-muted">{product.size}</p>
 
-        <div className="mt-4 flex items-end justify-between gap-2">
+        <div className="mt-auto flex items-end justify-between gap-2 pt-4">
           <p className="text-xl font-semibold tabular-nums">{formatMoney(product.price)}</p>
           <StockIndicator stock={product.stock} />
         </div>
@@ -102,7 +104,7 @@ export default function ProductCard({ product, inCartQty, onAdd, animationDelay 
           onClick={handleAdd}
           disabled={outOfStock}
           aria-label={outOfStock ? `${product.reference} is out of stock` : `Add ${product.reference} to cart`}
-          className={`btn mt-4 w-full ${justAdded ? 'bg-leaf-dark text-white' : 'btn-primary'}`}
+          className={`btn mt-4 w-full shrink-0 ${justAdded ? 'bg-leaf-dark text-white' : 'btn-primary'}`}
         >
           {outOfStock ? (
             'Out of stock'
