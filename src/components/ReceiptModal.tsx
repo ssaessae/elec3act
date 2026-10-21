@@ -2,21 +2,23 @@ import { useRef } from 'react';
 import { STORE } from '../config/store';
 import { useModalBehavior } from '../hooks/useModalBehavior';
 import { formatDateTime, formatMoney } from '../lib/format';
-import type { Order } from '../types';
+import type { OrderReceipt } from '../types';
 import { CloseIcon } from './icons';
+import DeliveryTracker from './DeliveryTracker';
 
 interface Props {
-  order: Order;
+  receipt: OrderReceipt;
   /** true right after checkout -> shows the animated "Order confirmed" header. */
   isNew?: boolean;
   onClose: () => void;
 }
 
 /** Animated success screen + itemised invoice. Also used to re-open saved receipts. */
-export default function ReceiptModal({ order, isNew = false, onClose }: Props) {
+export default function ReceiptModal({ receipt, isNew = false, onClose }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null);
   useModalBehavior(dialogRef, onClose);
 
+  const { order, tracking } = receipt;
   const { totals } = order;
   const firstName = order.customer.name.split(' ')[0];
   const taxName = `${STORE.pricing.taxLabel} (${Math.round(STORE.pricing.taxRate * 100)}%)`;
@@ -74,6 +76,8 @@ export default function ReceiptModal({ order, isNew = false, onClose }: Props) {
         </div>
 
         <div className="space-y-6 px-6 py-6">
+          <DeliveryTracker tracking={tracking} />
+
           {/* Meta */}
           <dl className="grid gap-4 text-sm sm:grid-cols-2">
             <div>

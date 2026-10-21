@@ -1,5 +1,12 @@
 import type { StoreConfig } from '../types';
 
+/** Replace with any wide, editorial grocery image to rebrand the storefront hero. */
+export const HERO_BANNER_IMAGE_URL =
+  'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1600&q=85';
+
+/** Courier illustration shown along the receipt delivery route. */
+export const DELIVERY_COURIER_ICON = '🛵';
+
 /**
  * ONE place to rebrand and tune the shop.
  * Change the store name, currency, shipping rules, tax behaviour, copy and
@@ -11,9 +18,9 @@ export const STORE: StoreConfig = {
   name: 'Pantry Lane',
   tagline: 'Everyday groceries, thoughtfully delivered.',
   heroEyebrow: 'The weekly shop, simplified',
-  heroTitle: 'Good pantry staples, without the noise.',
+  heroTitle: 'Pantry staples, delivered with elegance.',
   heroSubtitle:
-    'Thirty everyday favourites - noodles, coffee, snacks and cupboard essentials - ready for your basket.',
+    'Fresh picks and everyday essentials, thoughtfully packed and brought to your door in as little as 30 minutes.',
   footerNote: 'Demo storefront. No real payments are processed and no data leaves your browser.',
 
   /* ---------- Currency ---------- */
@@ -39,6 +46,7 @@ export const STORE: StoreConfig = {
   checkout: {
     minSimulatedDelayMs: 1200,
     maxSimulatedDelayMs: 2000,
+    simulatedDeliveryDurationMs: 12000,
     orderIdPrefix: 'PL',
   },
 

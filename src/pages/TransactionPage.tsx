@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CaptchaModal from '../components/CaptchaModal';
 import CartView from '../components/CartView';
 import CheckoutForm, { CHECKOUT_FORM_ID } from '../components/CheckoutForm';
 import { ArrowLeftIcon, CartIcon, SpinnerIcon } from '../components/icons';
@@ -8,22 +9,37 @@ import ReceiptModal from '../components/ReceiptModal';
 import { useStore } from '../context/StoreContext';
 import { buildOrderInput } from '../lib/checkout';
 import { formatMoney } from '../lib/format';
-import type { CheckoutFormValues, Order } from '../types';
+import type { CheckoutFormValues, OrderReceipt } from '../types';
 
 /** Page 2 - cart review, price breakdown, payment simulation and receipts. */
 export default function TransactionPage() {
-  const { lines, itemCount, totals, orders, placeOrder, clearOrderHistory } = useStore();
+  const { lines, itemCount, totals, orders, placeOrder, getOrderReceipt, clearOrderHistory } = useStore();
 
   const [placing, setPlacing] = useState(false);
-  const [receipt, setReceipt] = useState<{ order: Order; isNew: boolean } | null>(null);
+  const [captchaOpen, setCaptchaOpen] = useState(false);
+  const [pendingValues, setPendingValues] = useState<CheckoutFormValues | null>(null);
+  const [checkoutError, setCheckoutError] = useState('');
+  const [receipt, setReceipt] = useState<{ receipt: OrderReceipt; isNew: boolean } | null>(null);
 
-  async function handleSubmit(values: CheckoutFormValues) {
-    if (placing || lines.length === 0) return;
+  function handleSubmit(values: CheckoutFormValues) {
+    if (placing || captchaOpen || lines.length === 0) return;
+    setCheckoutError('');
+    setPendingValues(values);
+    setCaptchaOpen(true);
+  }
+
+  async function handleVerified() {
+    if (placing || !pendingValues) return;
     setPlacing(true);
     try {
-      // Simulated processing -> saves receipt + clears the cart in localStorage.
-      const order = await placeOrder(buildOrderInput(values));
-      setReceipt({ order, isNew: true });
+      const orderReceipt = await placeOrder(buildOrderInput(pendingValues));
+      setReceipt({ receipt: orderReceipt, isNew: true });
+      setCaptchaOpen(false);
+      setPendingValues(null);
+    } catch {
+      setCheckoutError('We couldn’t complete your order. Please try again.');
+      setCaptchaOpen(false);
+      setPendingValues(null);
     } finally {
       setPlacing(false);
     }
@@ -84,14 +100,31 @@ export default function TransactionPage() {
         </div>
       )}
 
+      {checkoutError && (
+        <p role="alert" className="mt-5 rounded-2xl border border-danger/20 bg-red-50 px-4 py-3 text-sm font-medium text-danger">
+          {checkoutError}
+        </p>
+      )}
+
       <OrderHistory
         orders={orders}
-        onView={(order) => setReceipt({ order, isNew: false })}
+        onView={(order) => setReceipt({ receipt: getOrderReceipt(order), isNew: false })}
         onClear={clearOrderHistory}
       />
 
       {receipt && (
-        <ReceiptModal order={receipt.order} isNew={receipt.isNew} onClose={() => setReceipt(null)} />
+        <ReceiptModal receipt={receipt.receipt} isNew={receipt.isNew} onClose={() => setReceipt(null)} />
+      )}
+      {captchaOpen && (
+        <CaptchaModal
+          busy={placing}
+          onClose={() => {
+            if (placing) return;
+            setCaptchaOpen(false);
+            setPendingValues(null);
+          }}
+          onVerified={handleVerified}
+        />
       )}
     </main>
   );

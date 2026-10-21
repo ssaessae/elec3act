@@ -4,8 +4,17 @@ import { PRODUCTS_BY_ID } from '../data/products';
 import { usePersistentState } from '../hooks/usePersistentState';
 import { maxPurchasable } from '../lib/catalog';
 import { computeTotals, round2 } from '../lib/pricing';
-import { STORAGE_KEYS, sanitizeCart, sanitizeOrders } from '../lib/storage';
-import type { CartItem, CartLine, Order, OrderLine, OrderTotals, PlaceOrderInput } from '../types';
+import {
+  STORAGE_KEYS,
+  readStored,
+  removeStored,
+  sanitizeCart,
+  sanitizeOrderTracking,
+  sanitizeOrders,
+  writeStored,
+} from '../lib/storage';
+import { trackingAt } from '../lib/tracking';
+import type { CartItem, CartLine, Order, OrderLine, OrderReceipt, OrderTotals, PlaceOrderInput } from '../types';
 
 export type AddResult = 'added' | 'limit' | 'out-of-stock';
 
@@ -21,13 +30,19 @@ interface StoreContextValue {
 
   /* Orders */
   orders: Order[];
-  placeOrder: (input: PlaceOrderInput) => Promise<Order>;
+  placeOrder: (input: PlaceOrderInput) => Promise<OrderReceipt>;
+  getOrderReceipt: (order: Order) => OrderReceipt;
   clearOrderHistory: () => void;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
 const pad = (n: number) => String(n).padStart(2, '0');
+
+function trackingStartFor(order: Order): number {
+  const parsed = Date.parse(order.createdAt);
+  return Number.isFinite(parsed) ? parsed : Date.now();
+}
 
 /** e.g. "PL-261021-K3F9" (prefix from config/store.ts). */
 function generateOrderId(): string {
@@ -109,7 +124,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const placeOrder = useCallback(
-    async (input: PlaceOrderInput): Promise<Order> => {
+    async (input: PlaceOrderInput): Promise<OrderReceipt> => {
       // Snapshot now, so edits made while "processing" can't change what was bought.
       const orderLines: OrderLine[] = lines.map(({ product, quantity, lineTotal }) => ({
         productId: product.id,
@@ -135,15 +150,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         totals: orderTotals,
         status: 'confirmed',
       };
+      const tracking = trackingAt(order.id, Date.parse(order.createdAt));
 
       setOrders((prev) => [order, ...prev]); // save receipt
       setCart([]); // clear the active cart (also clears it from localStorage)
-      return order;
+      writeStored(`${STORAGE_KEYS.trackingPrefix}${order.id}`, tracking);
+      return { order, tracking };
     },
     [lines, totals, setOrders, setCart],
   );
 
-  const clearOrderHistory = useCallback(() => setOrders([]), [setOrders]);
+  const getOrderReceipt = useCallback((order: Order): OrderReceipt => {
+    const storedTracking = sanitizeOrderTracking(
+      readStored(`${STORAGE_KEYS.trackingPrefix}${order.id}`),
+      order.id,
+      trackingStartFor(order),
+    );
+    return {
+      order,
+      tracking: trackingAt(order.id, storedTracking.startedAt),
+    };
+  }, []);
+
+  const clearOrderHistory = useCallback(() => {
+    for (const order of orders) removeStored(`${STORAGE_KEYS.trackingPrefix}${order.id}`);
+    setOrders([]);
+  }, [orders, setOrders]);
 
   const value = useMemo<StoreContextValue>(
     () => ({
@@ -156,9 +188,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeItem,
       orders,
       placeOrder,
+      getOrderReceipt,
       clearOrderHistory,
     }),
-    [lines, itemCount, totals, getQuantity, addToCart, setQuantity, removeItem, orders, placeOrder, clearOrderHistory],
+    [
+      lines,
+      itemCount,
+      totals,
+      getQuantity,
+      addToCart,
+      setQuantity,
+      removeItem,
+      orders,
+      placeOrder,
+      getOrderReceipt,
+      clearOrderHistory,
+    ],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

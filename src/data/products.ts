@@ -7,18 +7,15 @@ import { initialsOf, placeholderImage } from '../lib/placeholder';
  *
  *  IMAGES - where to replace the placeholders
  *  ------------------------------------------
- *  Out of the box every product shows a generated SVG placeholder.
- *  To use real photos:
- *    1. Put files in  public/images/products/  named after each product's `slug`
- *       (e.g. public/images/products/lucky-me-pancit-canton.jpg).
- *    2. Set  USE_PLACEHOLDER_IMAGES = false  below.
+ *  Product photos are served from public/images/products/ using each product's
+ *  `slug` and the configured image extension.
  *  Prefer a CDN/Unsplash URL for a single product? Add `imageUrl: 'https://...'`
  *  to that product's entry in SEED_PRODUCTS; it overrides everything else.
  *  Missing files fall back to a neutral placeholder automatically.
  */
 export const USE_PLACEHOLDER_IMAGES = true;
 export const IMAGE_BASE_PATH = '/images/products/'; // served from /public
-export const IMAGE_EXTENSION = 'jpg';
+export const IMAGE_EXTENSION = 'png';
 
 /** Shown when any image fails to load. */
 export const FALLBACK_IMAGE = placeholderImage('—', 150);
@@ -108,7 +105,7 @@ interface SeedProduct {
 
 const SEED_PRODUCTS: SeedProduct[] = [
   // ---- Snacks > Instant Noodles
-  { slug: 'lucky-me-pancit-canton', name: 'Instant Noodles', reference: 'Lucky Me! Pancit Canton', size: '60 g', categoryId: 'snacks', subcategoryId: 'instant-noodles', price: 18, stock: 120, hue: 28 },
+  { slug: 'PancitCanton', name: 'Instant Noodles', reference: 'Lucky Me! Pancit Canton', size: '60 g', categoryId: 'snacks', subcategoryId: 'instant-noodles', price: 18, stock: 120, hue: 28 },
   { slug: 'nissin-cup-noodles', name: 'Instant Noodles', reference: 'Nissin Cup Noodles', size: '40 g cup', categoryId: 'snacks', subcategoryId: 'instant-noodles', price: 45, stock: 64, hue: 8 },
   { slug: 'indomie-mi-goreng', name: 'Instant Noodles', reference: 'Indomie Mi Goreng', size: '85 g', categoryId: 'snacks', subcategoryId: 'instant-noodles', price: 22, stock: 8, hue: 18 },
 

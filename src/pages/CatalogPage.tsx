@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import CategoryBar from '../components/CategoryBar';
 import ProductGrid from '../components/ProductGrid';
 import SearchSortBar from '../components/SearchSortBar';
-import { STORE } from '../config/store';
+import { HERO_BANNER_IMAGE_URL, STORE } from '../config/store';
 import { useStore } from '../context/StoreContext';
 import { useToast } from '../context/ToastContext';
 import { CATEGORIES, PRODUCTS } from '../data/products';
@@ -61,12 +61,28 @@ export default function CatalogPage() {
   return (
     <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-8 outline-none sm:px-6">
       {/* Editorial hero */}
-      <section className="animate-fade-up py-12 sm:py-16">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-leaf">{STORE.heroEyebrow}</p>
-        <h1 className="mt-3 max-w-3xl font-display text-4xl font-semibold leading-[1.08] tracking-tight sm:text-6xl">
-          {STORE.heroTitle}
-        </h1>
-        <p className="mt-5 max-w-xl text-base text-muted sm:text-lg">{STORE.heroSubtitle}</p>
+      <section
+        aria-labelledby="hero-heading"
+        className="relative isolate my-8 min-h-[390px] overflow-hidden rounded-[2rem] bg-ink shadow-lift animate-fade-up sm:my-12 sm:min-h-[430px]"
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-cover bg-center"
+          style={{ backgroundImage: `url("${HERO_BANNER_IMAGE_URL}")` }}
+        />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-ink/90 via-ink/65 to-ink/15" />
+        <div className="flex min-h-[390px] max-w-3xl flex-col items-start justify-center px-6 py-12 text-white sm:min-h-[430px] sm:px-12">
+          <p className="rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white/90 backdrop-blur">
+            {STORE.heroEyebrow}
+          </p>
+          <h1 id="hero-heading" className="mt-5 max-w-2xl font-display text-4xl font-semibold leading-[1.08] tracking-tight sm:text-6xl">
+            {STORE.heroTitle}
+          </h1>
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-white/85 sm:text-lg">{STORE.heroSubtitle}</p>
+          <span className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink shadow-card">
+            <span aria-hidden="true">⚡</span> 30-minute express delivery
+          </span>
+        </div>
       </section>
 
       {/* Controls */}

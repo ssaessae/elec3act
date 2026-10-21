@@ -41,8 +41,8 @@ export default function CartView({ disabled = false }: Props) {
 
             <div className="flex min-w-0 flex-1 flex-col justify-between gap-2 sm:flex-row sm:items-center sm:gap-4">
               <div className="min-w-0">
-                <h3 className="truncate font-display text-base font-semibold sm:text-lg">{product.name}</h3>
-                <p className="truncate text-sm text-muted">{product.reference}</p>
+                <h3 className="truncate font-display text-base font-semibold sm:text-lg">{product.reference}</h3>
+                <p className="truncate text-sm font-light text-neutral-500">{product.name}</p>
                 <p className="mt-0.5 text-xs text-muted">
                   {product.size} · {formatMoney(product.price)} each
                 </p>

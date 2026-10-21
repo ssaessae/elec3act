@@ -106,6 +106,26 @@ export interface Order {
   status: 'confirmed';
 }
 
+export type OrderStatus = 'confirmed-packed' | 'out-for-delivery' | 'approaching' | 'delivered';
+
+export interface CaptchaChallenge {
+  prompt: string;
+  answer: string;
+  id: number;
+}
+
+export interface OrderTracking {
+  orderId: string;
+  startedAt: number;
+  progress: number;
+  status: OrderStatus;
+}
+
+export interface OrderReceipt {
+  order: Order;
+  tracking: OrderTracking;
+}
+
 export interface PlaceOrderInput {
   customer: OrderCustomer;
   payment: OrderPayment;
@@ -147,7 +167,12 @@ export interface StoreConfig {
     taxLabel: string;
   };
   storage: { prefix: string; version: string };
-  checkout: { minSimulatedDelayMs: number; maxSimulatedDelayMs: number; orderIdPrefix: string };
+  checkout: {
+    minSimulatedDelayMs: number;
+    maxSimulatedDelayMs: number;
+    simulatedDeliveryDurationMs: number;
+    orderIdPrefix: string;
+  };
   inventory: { lowStockThreshold: number; maxQuantityPerItem: number };
   paymentMethods: { id: PaymentMethodId; label: string; description: string }[];
   ewalletProviders: { id: EwalletProviderId; label: string }[];

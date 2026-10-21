@@ -85,10 +85,10 @@ export default function ProductCard({ product, inCartQty, onAdd, animationDelay 
       </div>
 
       <div className="flex flex-1 flex-col px-1 pb-1 pt-4">
-        <h3 className="font-display text-lg font-semibold leading-snug tracking-tight">{product.name}</h3>
-        <p className="mt-0.5 text-sm text-muted">
-          <span className="sr-only">Example: </span>
-          {product.reference}
+        <h3 className="font-display text-lg font-semibold leading-snug tracking-tight">{product.reference}</h3>
+        <p className="mt-0.5 text-sm font-light text-neutral-500">
+          <span className="sr-only">Product type: </span>
+          {product.name}
         </p>
         <p className="mt-0.5 text-xs text-muted">{product.size}</p>
 

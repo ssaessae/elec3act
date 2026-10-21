@@ -1,5 +1,5 @@
 import { STORE } from '../config/store';
-import type { CartItem, Order } from '../types';
+import type { CartItem, Order, OrderStatus, OrderTracking } from '../types';
 
 /**
  * localStorage layer.
@@ -23,6 +23,8 @@ export const STORAGE_KEYS = {
   cart: `${prefix}:cart`,
   /** Order history / saved receipts: Order[] (newest first). */
   orders: `${prefix}:orders`,
+  /** Per-order live delivery progress: OrderTracking. Append the order id. */
+  trackingPrefix: `${prefix}:tracking:`,
 } as const;
 
 export function parseJSON(raw: string | null): unknown {
@@ -47,6 +49,14 @@ export function writeStored(key: string, value: unknown): void {
     window.localStorage.setItem(key, JSON.stringify(value));
   } catch {
     /* storage unavailable or full - the app keeps working in-memory */
+  }
+}
+
+export function removeStored(key: string): void {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    /* storage unavailable */
   }
 }
 
@@ -86,4 +96,32 @@ export function sanitizeOrders(raw: unknown): Order[] {
       order.payment !== null
     );
   });
+}
+
+export function sanitizeOrderTracking(raw: unknown, orderId: string, fallbackStartedAt: number): OrderTracking {
+  const candidate = typeof raw === 'object' && raw !== null ? (raw as Partial<OrderTracking>) : null;
+  const isOrderStatus = (value: unknown): value is OrderStatus =>
+    value === 'confirmed-packed' || value === 'out-for-delivery' || value === 'approaching' || value === 'delivered';
+  if (
+    candidate?.orderId === orderId &&
+    typeof candidate.startedAt === 'number' &&
+    Number.isFinite(candidate.startedAt) &&
+    typeof candidate.progress === 'number' &&
+    Number.isFinite(candidate.progress) &&
+    isOrderStatus(candidate.status)
+  ) {
+    return {
+      orderId,
+      startedAt: candidate.startedAt,
+      progress: Math.max(0, Math.min(100, candidate.progress)),
+      status: candidate.status,
+    };
+  }
+
+  return {
+    orderId,
+    startedAt: fallbackStartedAt,
+    progress: 0,
+    status: 'confirmed-packed',
+  };
 }
